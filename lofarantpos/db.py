@@ -1,5 +1,6 @@
 import os, csv, pathlib
 import numpy
+from lofarantpos import geo
 
 def install_prefix():
     path_elements = pathlib.PurePath(__file__).parts
@@ -94,3 +95,54 @@ class LofarAntennaDatabase(object):
 
     def __repr__(self):
         return repr(self.__dict__)
+
+
+    def antenna_etrs(self, field_name):
+        station = field_name[0:5].upper()
+        subfield = field_name[5:].upper()
+        antenna_ids = {'LBA': numpy.arange(2048),
+                       'HBA': numpy.arange(2048),
+                       'HBA0': numpy.arange(0, 24),
+                       'HBA1': numpy.arange(24, 48)}
+        return numpy.array(
+            getcol(
+                sorted([ant for ant in self.antennas
+                        if ant.station == station
+                        and ant.antenna_type == subfield[0:3]
+                        and ant.antenna_id in antenna_ids[subfield]],
+                       key=lambda x: x.antenna_id),
+                'etrs'))
+
+
+    def antenna_pqr(self, field_name):
+        return geo.transform(
+            self.antenna_etrs(field_name),
+            self.phase_centres[field_name],
+            self.pqr_to_etrs[field_name].T)
+        
+    
+    def hba_dipole_pqr(self, field_name):
+        base_tile= numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
+                                [[-1.5, 0.5], [-0.5, 0.5], [+0.5, 0.5], [+1.5, +0.5]],
+                                [[-1.5, -0.5], [-0.5, -0.5], [+0.5, -0.5], [+1.5, -0.5]],
+                                [[-1.5, -1.5], [-0.5, -1.5], [+0.5, -1.5], [+1.5, -1.5]]],
+                               dtype=numpy.float32)
+        base_tile *= 1.25
+        base_tile_delta_pqr = base_tile.reshape((-1, 2))
+        rotation = self.hba_rotations[field_name]
+        matrix = numpy.array([[numpy.cos(rotation), numpy.sin(rotation)],
+                              [-numpy.sin(rotation), numpy.cos(rotation)]],
+                             dtype=numpy.float32)
+        rotated_tile_pqr = numpy.dot(matrix, base_tile_delta_pqr.T).T
+        antenna_pqr = self.antenna_pqr(field_name)
+        return numpy.array([[element[0]+ant[0], element[1]+ant[1], ant[2]]
+                            for ant in antenna_pqr
+                            for element in rotated_tile_pqr],
+                           dtype=numpy.float32).reshape((-1,3))
+    
+    def hba_dipole_etrs(self, field_name):
+        return  geo.transform(
+            self.hba_dipole_pqr(field_name),
+            numpy.zeros(3),
+            self.pqr_to_etrs[field_name]) + \
+            self.phase_centres[field_name][numpy.newaxis,:]
