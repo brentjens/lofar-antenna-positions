@@ -1,7 +1,15 @@
-import csv, numpy
+import os, csv, pathlib
+import numpy
 
 def install_prefix():
-    return __file__
+    path_elements = pathlib.PurePath(__file__).parts
+    path_to_module = path_elements[:-2]
+    if path_to_module[-1] == 'site-packages':
+        if 'python' in path_to_module[-2]:
+            if 'lib' in path_to_module[-3]:
+                return os.path.join(*(path_to_module[:-3]))
+    return os.path.join(*path_to_module)
+
 
 def parse_csv(file_name, data_type):
     '''
@@ -21,7 +29,7 @@ def getcol(rows, col_name):
 
 def parse_hba_rotations(file_name):
     hba_rotations = {}
-    for row in parse_csv('data/hba-rotations.csv', list):
+    for row in parse_csv(file_name, list):
         if row[2].strip() == '':
             hba_rotations[row[0]+'HBA'] = float(row[1])*numpy.pi/180.0
         else:
@@ -67,3 +75,22 @@ class RotationMatrix(object):
         return repr(self.__dict__)
 
 
+class LofarAntennaDatabase(object):
+    def __init__(self, path_to_files=None):
+        if path_to_files is None:
+            share = os.path.join(install_prefix(), 'share/lofarantpos/')
+        else:
+            share = path_to_files
+        self.phase_centres = {
+            c.station+c.field: c.etrs
+            for c in parse_csv(os.path.join(share, 'etrs-phase-centres.csv'),
+                               PhaseCentre)}
+        self.antennas = parse_csv(os.path.join(share, 'etrs-antenna-positions.csv'),
+                                  Antenna)
+        pqr_to_etrs_rows = parse_csv(os.path.join(share, 'rotation_matrices.dat'),
+                            RotationMatrix)
+        self.pqr_to_etrs = {m.station+m.field: m.matrix for m in pqr_to_etrs_rows}
+        self.hba_rotations = parse_hba_rotations(os.path.join(share, 'hba-rotations.csv'))
+
+    def __repr__(self):
+        return repr(self.__dict__)
