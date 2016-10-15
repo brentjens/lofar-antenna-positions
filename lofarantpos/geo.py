@@ -1,4 +1,4 @@
-from numpy import sqrt, sin, cos, arctan2, array, cross, dot
+from numpy import sqrt, sin, cos, arctan2, array, cross, dot, float64
 from numpy.linalg.linalg import norm
 
 def normalized_earth_radius(latitude_rad):
@@ -26,6 +26,20 @@ def geographic_from_xyz(xyz_m):
     lat_rad = phi
     height_m = r_m*cos(lat_rad) + z_m*sin(lat_rad) - wgs84_a*sqrt(1.0 - wgs84_e2*sin(lat_rad)**2)
     return {'lon_rad': lon_rad, 'lat_rad': lat_rad, 'height_m': height_m}
+
+
+
+def xyz_from_geographic(lon_rad, lat_rad, height_m):
+    wgs84_a = 6378137.0
+    wgs84_f = 1./298.257223563
+    wgs84_e2 = wgs84_f*(2.0 - wgs84_f)
+    c = normalized_earth_radius(lat_rad)
+    f = wgs84_f
+    a = wgs84_a
+    s = c*(1-f)**2
+    return array([(a*c + height_m)*cos(lat_rad)*cos(lon_rad),
+                  (a*c + height_m)*cos(lat_rad)*sin(lon_rad),
+                  (a*s + height_m)*sin(lat_rad)], dtype=float64)
 
 def normal_vector_ellipsoid(lon_rad, lat_rad):
     return array([cos(lat_rad)*cos(lon_rad),
