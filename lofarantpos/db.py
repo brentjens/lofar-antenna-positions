@@ -96,6 +96,13 @@ class LofarAntennaDatabase(object):
                             RotationMatrix)
         self.pqr_to_etrs = {m.station+m.field: m.matrix for m in pqr_to_etrs_rows}
         self.hba_rotations = parse_hba_rotations(os.path.join(share, 'hba-rotations.csv'))
+        core_stations = numpy.unique([name[0:5] for name in self.phase_centres.keys()
+                                      if 'CS' in name])
+        for core_station in core_stations:
+            self.pqr_to_etrs[core_station+'HBA'] = self.pqr_to_etrs[core_station+'HBA0']
+#            self.antennas[core_station+'HBA'] = numpy.concatenate([self.antennas[core_station+'HBA0'],
+#                                                                   self.antennas[core_station+'HBA0']],
+#                                                                  axis=0)
 
     def __repr__(self):
         return repr(self.__dict__)
