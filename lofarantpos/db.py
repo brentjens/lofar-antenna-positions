@@ -79,7 +79,11 @@ class RotationMatrix(object):
 class LofarAntennaDatabase(object):
     def __init__(self, path_to_files=None):
         if path_to_files is None:
-            share = os.path.join(install_prefix(), 'share/lofarantpos/')
+            search_path = [install_prefix(), '/usr/local/', '/usr/']
+            for attempt in search_path:
+                share = os.path.join(attempt, 'share/lofarantpos/')
+                if os.path.exists(os.path.join(share, 'etrs-phase-centres.csv')):
+                    break
         else:
             share = path_to_files
         self.phase_centres = {
