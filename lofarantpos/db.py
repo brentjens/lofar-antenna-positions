@@ -1,3 +1,20 @@
+"""LOFAR antenna database
+
+Module for manipulating LOFAR antenna databases. Typical usage is to create
+an instance of a LofarAntennaDatabase:
+
+>>> db = lofarantpos.db.LofarAntennaDatabase()
+>>> db.phase_centres['CS001LBA']
+array([ 3826923.942,   460915.117,  5064643.229])
+>>> db.antenna_pqr('RS210LBA')
+array([[  0.   ,   0.   ,   0.   ],
+       [ -0.   ,   2.551,   0.002],
+       [  2.25 ,   1.35 ,   0.001],
+       ...,
+       [-31.706,  18.204,   0.01 ],
+       [-24.935,  33.109,   0.021],
+       [ 18.215,  34.236,   0.027]])
+"""
 import csv
 import os
 import pathlib
@@ -11,17 +28,23 @@ def install_prefix():
     path_elements = pathlib.PurePath(__file__).parts
     path_to_module = path_elements[:-2]
     if path_to_module[-1] == 'site-packages':
-        if 'python' in path_to_module[-2]:
-            if 'lib' in path_to_module[-3]:
-                return os.path.join(*(path_to_module[:-3]))
+        if 'python' in path_to_module[-2] and 'lib' in path_to_module[-3]:
+            return os.path.join(*(path_to_module[:-3]))
     return os.path.join(*path_to_module)
 
 
 def parse_csv(file_name, data_type):
-    """
-    *Example*
+    """Read a CSV file and convert the elements to a given data type
 
-    >>> parse_csv('data/etrs-phase-centres.csv', PhaseCentre)
+    Args:
+        file_name (str): name of file to be read
+        data_type (type): type to convert each line of the CSV to
+
+    Returns:
+        list: List of objects of the given type
+
+    Example:
+        >>> parse_csv('data/etrs-phase-centres.csv', PhaseCentre)
     """
     return [data_type(row)
             for row_id, row in enumerate(csv.reader(open(file_name)))
@@ -82,6 +105,19 @@ class RotationMatrix(object):
 
 
 class LofarAntennaDatabase(object):
+    """Database with LOFAR antenna positions
+
+    This database contains the LOFAR antenna positions in both ETRS and the
+    station/field specific pqr coordinate system. The upstream source is
+    the LOFAR svn repository at https://svn.astron.nl/LOFAR.
+
+    Attributes:
+        antennas (list): all antenna information
+        phase_centres (dict): ETRS phase centres for each antenna field
+        hba_rotations (dict): HBA rotations (in radians) for each antenna field
+        pqr_to_etrs (dict): Rotation matrix from PQR to ETRS for each antenna field
+    """
+
     def __init__(self, path_to_files=None):
         if path_to_files is None:
             search_path = [install_prefix(), '/usr/local/', '/usr/']
@@ -114,6 +150,14 @@ class LofarAntennaDatabase(object):
         return repr(self.__dict__)
 
     def antenna_etrs(self, field_name):
+        """Return a list of all ETRS antenna coordinates for a given antenna field
+
+        Args:
+            field_name (str): Field name (e.g. 'CS001HBA0')
+
+        Returns:
+            array: array of ETRS coordinates
+        """
         station = field_name[0:5].upper()
         subfield = field_name[5:].upper()
         antenna_ids = {'LBA': numpy.arange(2048),
@@ -130,12 +174,28 @@ class LofarAntennaDatabase(object):
                 'etrs'))
 
     def antenna_pqr(self, field_name):
+        """Return a list of all PQR antenna coordinates for a given antenna field
+
+        Args:
+            field_name (str): Field name (e.g. 'CS001HBA0')
+
+        Returns:
+            array: array of PQR coordinates
+        """
         return geo.transform(
             self.antenna_etrs(field_name),
             self.phase_centres[field_name],
             self.pqr_to_etrs[field_name].T)
 
     def hba_dipole_pqr(self, field_name):
+        """Return a list of all PQR dipole coordinates for a given HBA antenna field
+
+        Args:
+            field_name (str): Field name (e.g. 'CS001HBA0')
+
+        Returns:
+            array: array of PQR coordinates
+        """
         base_tile = numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
                                  [[-1.5, 0.5], [-0.5, 0.5], [+0.5, 0.5], [+1.5, +0.5]],
                                  [[-1.5, -0.5], [-0.5, -0.5], [+0.5, -0.5], [+1.5, -0.5]],
@@ -155,6 +215,14 @@ class LofarAntennaDatabase(object):
                            dtype=numpy.float32).reshape((-1, 3))
 
     def hba_dipole_etrs(self, field_name):
+        """Return a list of all ETRS dipole coordinates for a given HBA antenna field
+
+        Args:
+            field_name (str): Field name (e.g. 'CS001HBA0')
+
+        Returns:
+            array: array of ETRS coordinates
+        """
         return geo.transform(
             self.hba_dipole_pqr(field_name),
             numpy.zeros(3),

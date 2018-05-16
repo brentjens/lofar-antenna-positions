@@ -1,15 +1,23 @@
+"""Functions for geographic transformations commonly used for LOFAR"""
+
 from numpy import sqrt, sin, cos, arctan2, array, cross, dot, float64
 from numpy.linalg.linalg import norm
 
 
 def normalized_earth_radius(latitude_rad):
+    """Compute the normalized radius of the WGS84 ellipsoid at a given latitude"""
     wgs84_f = 1. / 298.257223563
     return 1.0 / sqrt(cos(latitude_rad) ** 2 + ((1.0 - wgs84_f) ** 2) * (sin(latitude_rad) ** 2))
 
 
 def geographic_from_xyz(xyz_m):
-    """
-    Compute lon, lat, and height
+    """Compute longitude, latitude and height (from the WGS84 ellipsoid) of a given point
+
+    Args:
+        xyz_m (Union[array, list]): xyz-coordinates (in m) of the given point.
+
+    Returns:
+        dict: Dictionary with 'lon_rad', 'lat_rad', 'height_m'
     """
     wgs84_a = 6378137.0
     wgs84_f = 1. / 298.257223563
@@ -31,6 +39,26 @@ def geographic_from_xyz(xyz_m):
 
 
 def xyz_from_geographic(lon_rad, lat_rad, height_m):
+    """Compute cartesian xyz coordinates from a longitude, latitude and height (from
+    the WGS84 ellipsoid)
+
+    Args:
+        lon_rad (Union[float, array]): longitude in radians
+        lat_rad (Union[float, array]): latitude in radians
+        height_m (Union[float, array]): height in meters
+
+    Returns:
+        array: xyz coordinates in meters
+
+    Examples:
+        >>> xyz_from_geographic(-0.1382, 0.9266, 99.115)
+        array([ 3802111.625,  -528822.826,  5076662.151])
+        >>> coords = array([[-0.1382, 0.9266,  99.115],\
+                            [ 0.2979, 0.9123, 114.708]])
+        >>> xyz_from_geographic(coords[:,0], coords[:,1], coords[:,2]).T
+        array([[ 3802111.625,  -528822.826,  5076662.151],\
+               [ 3738960.12 ,  1147998.325,  5021398.444]])
+    """
     wgs84_a = 6378137.0
     wgs84_f = 1. / 298.257223563
     wgs84_e2 = wgs84_f * (2.0 - wgs84_f)
@@ -65,6 +93,16 @@ def projection_matrix(xyz0_m, normal_vector):
 
 
 def transform(xyz_m, xyz0_m, mat):
+    """Perform a coordinate transformation on an array of points
+
+    Args:
+        xyz_m (array): Array of points
+        xyz0_m (array): Origin of transformation
+        mat (array): Transformation matrix
+
+    Returns:
+        array: Array of transformed points
+    """
     offsets = xyz_m - xyz0_m
     return array([dot(mat, offset) for offset in offsets])
 
