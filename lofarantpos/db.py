@@ -1,6 +1,11 @@
-import os, csv, pathlib
+import csv
+import os
+import pathlib
+
 import numpy
+
 from lofarantpos import geo
+
 
 def install_prefix():
     path_elements = pathlib.PurePath(__file__).parts
@@ -13,29 +18,29 @@ def install_prefix():
 
 
 def parse_csv(file_name, data_type):
-    '''
+    """
     *Example*
-    
+
     >>> parse_csv('data/etrs-phase-centres.csv', PhaseCentre)
-    '''
-    return [data_type(row) 
+    """
+    return [data_type(row)
             for row_id, row in enumerate(csv.reader(open(file_name)))
             if row_id > 0]
 
 
 def getcol(rows, col_name):
     return [row.__dict__[col_name]
-           for row in rows]
+            for row in rows]
 
 
 def parse_hba_rotations(file_name):
     hba_rotations = {}
     for row in parse_csv(file_name, list):
         if row[2].strip() == '':
-            hba_rotations[row[0]+'HBA'] = float(row[1])*numpy.pi/180.0
+            hba_rotations[row[0] + 'HBA'] = float(row[1]) * numpy.pi / 180.0
         else:
-            hba_rotations[row[0]+'HBA0'] = float(row[1])*numpy.pi/180.0
-            hba_rotations[row[0]+'HBA1'] = float(row[2])*numpy.pi/180.0
+            hba_rotations[row[0] + 'HBA0'] = float(row[1]) * numpy.pi / 180.0
+            hba_rotations[row[0] + 'HBA1'] = float(row[2]) * numpy.pi / 180.0
     return hba_rotations
 
 
@@ -53,7 +58,7 @@ class Antenna(object):
     def __repr__(self):
         return repr(self.__dict__)
 
-        
+
 class PhaseCentre(object):
     def __init__(self, csv_row):
         self.station = csv_row[0]
@@ -61,7 +66,7 @@ class PhaseCentre(object):
         self.etrs = numpy.array([float(csv_row[2]),
                                  float(csv_row[3]),
                                  float(csv_row[4])])
-        
+
     def __repr__(self):
         return repr(self.__dict__)
 
@@ -87,26 +92,26 @@ class LofarAntennaDatabase(object):
         else:
             share = path_to_files
         self.phase_centres = {
-            c.station+c.field: c.etrs
+            c.station + c.field: c.etrs
             for c in parse_csv(os.path.join(share, 'etrs-phase-centres.csv'),
                                PhaseCentre)}
         self.antennas = parse_csv(os.path.join(share, 'etrs-antenna-positions.csv'),
                                   Antenna)
         pqr_to_etrs_rows = parse_csv(os.path.join(share, 'rotation_matrices.dat'),
-                            RotationMatrix)
-        self.pqr_to_etrs = {m.station+m.field: m.matrix for m in pqr_to_etrs_rows}
+                                     RotationMatrix)
+        self.pqr_to_etrs = {m.station + m.field: m.matrix for m in pqr_to_etrs_rows}
         self.hba_rotations = parse_hba_rotations(os.path.join(share, 'hba-rotations.csv'))
         core_stations = numpy.unique([name[0:5] for name in self.phase_centres.keys()
                                       if 'CS' in name])
         for core_station in core_stations:
-            self.pqr_to_etrs[core_station+'HBA'] = self.pqr_to_etrs[core_station+'HBA0']
-#            self.antennas[core_station+'HBA'] = numpy.concatenate([self.antennas[core_station+'HBA0'],
-#                                                                   self.antennas[core_station+'HBA0']],
-#                                                                  axis=0)
+            self.pqr_to_etrs[core_station + 'HBA'] = self.pqr_to_etrs[core_station + 'HBA0']
+
+    #            self.antennas[core_station+'HBA'] = numpy.concatenate([self.antennas[core_station+'HBA0'],
+    #                                                                   self.antennas[core_station+'HBA0']],
+    #                                                                  axis=0)
 
     def __repr__(self):
         return repr(self.__dict__)
-
 
     def antenna_etrs(self, field_name):
         station = field_name[0:5].upper()
@@ -124,20 +129,18 @@ class LofarAntennaDatabase(object):
                        key=lambda x: x.antenna_id),
                 'etrs'))
 
-
     def antenna_pqr(self, field_name):
         return geo.transform(
             self.antenna_etrs(field_name),
             self.phase_centres[field_name],
             self.pqr_to_etrs[field_name].T)
-        
-    
+
     def hba_dipole_pqr(self, field_name):
-        base_tile= numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
-                                [[-1.5, 0.5], [-0.5, 0.5], [+0.5, 0.5], [+1.5, +0.5]],
-                                [[-1.5, -0.5], [-0.5, -0.5], [+0.5, -0.5], [+1.5, -0.5]],
-                                [[-1.5, -1.5], [-0.5, -1.5], [+0.5, -1.5], [+1.5, -1.5]]],
-                               dtype=numpy.float32)
+        base_tile = numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
+                                 [[-1.5, 0.5], [-0.5, 0.5], [+0.5, 0.5], [+1.5, +0.5]],
+                                 [[-1.5, -0.5], [-0.5, -0.5], [+0.5, -0.5], [+1.5, -0.5]],
+                                 [[-1.5, -1.5], [-0.5, -1.5], [+0.5, -1.5], [+1.5, -1.5]]],
+                                dtype=numpy.float32)
         base_tile *= 1.25
         base_tile_delta_pqr = base_tile.reshape((-1, 2))
         rotation = self.hba_rotations[field_name]
@@ -146,14 +149,14 @@ class LofarAntennaDatabase(object):
                              dtype=numpy.float32)
         rotated_tile_pqr = numpy.dot(matrix, base_tile_delta_pqr.T).T
         antenna_pqr = self.antenna_pqr(field_name)
-        return numpy.array([[element[0]+ant[0], element[1]+ant[1], ant[2]]
+        return numpy.array([[element[0] + ant[0], element[1] + ant[1], ant[2]]
                             for ant in antenna_pqr
                             for element in rotated_tile_pqr],
-                           dtype=numpy.float32).reshape((-1,3))
-    
+                           dtype=numpy.float32).reshape((-1, 3))
+
     def hba_dipole_etrs(self, field_name):
-        return  geo.transform(
+        return geo.transform(
             self.hba_dipole_pqr(field_name),
             numpy.zeros(3),
             self.pqr_to_etrs[field_name]) + \
-            self.phase_centres[field_name][numpy.newaxis,:]
+               self.phase_centres[field_name][numpy.newaxis, :]
