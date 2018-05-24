@@ -51,13 +51,15 @@ def xyz_from_geographic(lon_rad, lat_rad, height_m):
         array: xyz coordinates in meters
 
     Examples:
+        >>> import numpy
+        >>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
         >>> xyz_from_geographic(-0.1382, 0.9266, 99.115)
-        array([ 3802111.625,  -528822.826,  5076662.151])
+        array([ 3802111.62491...,  -528822.82583...,  5076662.15079...])
         >>> coords = array([[-0.1382, 0.9266,  99.115],\
                             [ 0.2979, 0.9123, 114.708]])
         >>> xyz_from_geographic(coords[:,0], coords[:,1], coords[:,2]).T
-        array([[ 3802111.625,  -528822.826,  5076662.151],\
-               [ 3738960.12 ,  1147998.325,  5021398.444]])
+        array([[ 3802111.62491...,  -528822.82583...,  5076662.15079...],
+               [ 3738960.12012...,  1147998.32536...,  5021398.44437...]])
     """
     wgs84_a = 6378137.0
     wgs84_f = 1. / 298.257223563
