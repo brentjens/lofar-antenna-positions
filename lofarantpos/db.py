@@ -3,17 +3,18 @@
 Module for manipulating LOFAR antenna databases. Typical usage is to create
 an instance of a LofarAntennaDatabase:
 
+>>> import lofarantpos, numpy
 >>> db = lofarantpos.db.LofarAntennaDatabase()
 >>> db.phase_centres['CS001LBA']
 array([ 3826923.942,   460915.117,  5064643.229])
->>> db.antenna_pqr('RS210LBA')
-array([[  0.   ,   0.   ,   0.   ],
-       [ -0.   ,   2.551,   0.002],
-       [  2.25 ,   1.35 ,   0.001],
-       ...,
-       [-31.706,  18.204,   0.01 ],
-       [-24.935,  33.109,   0.021],
-       [ 18.215,  34.236,   0.027]])
+>>> numpy.set_printoptions(suppress=True)
+>>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
+>>> db.antenna_pqr('RS210LBA')[:5]
+array([[ 0.        ,  0.        ,  0.        ],
+       [-0.00006...,  2.55059...,  0.00185...],
+       [ 2.24997...,  1.3499502 ,  0.00130...],
+       [ 2.24982..., -1.35031..., -0.0004149 ],
+       [ 0.00006..., -2.55059..., -0.00185...]])
 """
 import csv
 import os
@@ -38,13 +39,10 @@ def parse_csv(file_name, data_type):
 
     Args:
         file_name (str): name of file to be read
-        data_type (type): type to convert each line of the CSV to
+        data_type (type): type to convert each line of the CSV to (e.g. `PhaseCentre`)
 
     Returns:
         list: List of objects of the given type
-
-    Example:
-        >>> parse_csv('data/etrs-phase-centres.csv', PhaseCentre)
     """
     return [data_type(row)
             for row_id, row in enumerate(csv.reader(open(file_name)))
@@ -191,10 +189,22 @@ class LofarAntennaDatabase(object):
         """Return a list of all PQR dipole coordinates for a given HBA antenna field
 
         Args:
-            field_name (str): Field name (e.g. 'CS001HBA0')
+            field_name (str): Field name (e.g. "CS001HBA0")
 
         Returns:
             array: array of PQR coordinates
+
+        Example:
+            >>> import lofarantpos.db
+            >>> import numpy
+            >>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
+            >>> db = lofarantpos.db.LofarAntennaDatabase()
+            >>> db.hba_dipole_pqr("CS001HBA0")[:5]
+            array([[  1.93364...,  15.28453...,   0.00008...],
+                   [  3.07557...,  14.77611...,   0.00008...],
+                   [  4.21750...,  14.26769...,   0.00008...],
+                   [  5.35943...,  13.75927...,   0.00008...],
+                   [  1.42522...,  14.14260...,   0.00008...]], dtype=float32)
         """
         base_tile = numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
                                  [[-1.5, 0.5], [-0.5, 0.5], [+0.5, 0.5], [+1.5, +0.5]],
@@ -222,6 +232,18 @@ class LofarAntennaDatabase(object):
 
         Returns:
             array: array of ETRS coordinates
+
+        Example:
+            >>> import lofarantpos.db
+            >>> import numpy
+            >>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
+            >>> db = lofarantpos.db.LofarAntennaDatabase()
+            >>> db.hba_dipole_etrs("IE613HBA")[:5]
+            array([[ 3801679.57332...,  -528959.80788...,  5076969.80405...],
+                   [ 3801680.56727...,  -528959.55814...,  5076969.08837...],
+                   [ 3801681.56122...,  -528959.3083985 ,  5076968.37269...],
+                   [ 3801682.55516...,  -528959.05865...,  5076967.65701...],
+                   [ 3801679.71139...,  -528961.02799...,  5076969.57003...]])
         """
         return geo.transform(
             self.hba_dipole_pqr(field_name),
