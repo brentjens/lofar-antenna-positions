@@ -120,7 +120,7 @@ class LofarAntennaDatabase(object):
         if path_to_files is None:
             search_path = [install_prefix(), '/usr/local/', '/usr/']
             for attempt in search_path:
-                share = os.path.join(attempt, 'share/lofarantpos/')
+                share = os.path.join(attempt, os.path.join('share', 'lofarantpos/'))
                 if os.path.exists(os.path.join(share, 'etrs-phase-centres.csv')):
                     break
         else:
