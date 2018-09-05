@@ -118,9 +118,13 @@ class LofarAntennaDatabase(object):
 
     def __init__(self, path_to_files=None):
         if path_to_files is None:
-            search_path = [install_prefix(), '/usr/local/', '/usr/']
+            # Install_prefix can end up to be some_path/lib/site_packages,
+            # append to the search path the install_prefix minus last two directories
+            search_path = [install_prefix(),
+                           os.sep.join(install_prefix().split(os.sep)[:-2]),
+                           '/usr/local', '/usr']
             for attempt in search_path:
-                share = os.path.join(attempt, 'share/lofarantpos/')
+                share = os.path.join(attempt, os.path.join('share', 'lofarantpos'))
                 if os.path.exists(os.path.join(share, 'etrs-phase-centres.csv')):
                     break
         else:
