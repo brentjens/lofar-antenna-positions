@@ -12,7 +12,7 @@ if __name__ == "__main__":
           packages     = ['lofarantpos'],
           requires     = ['numpy', 'pathlib'],
           scripts      = [],
-          data_files   = [('share/lofarantpos/',
+          data_files   = [('share/lofarantpos',
                            ['share/lofarantpos/etrs-antenna-positions.csv',
                             'share/lofarantpos/etrs-phase-centres.csv',
                             'share/lofarantpos/hba-rotations.csv',
