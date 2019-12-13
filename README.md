@@ -30,3 +30,15 @@ height w.r.t. WGS84 ellipsoid.
  'lat_rad': 0.9234780446647385,
  'height_m': 50.162683041766286}
 ```
+
+## Installation
+
+This module can be pip-installed:
+```
+pip install lofarantpos
+```
+
+Alternatively, install it from this source with
+```
+python setup.py install
+```
