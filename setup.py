@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 if __name__ == "__main__":
-    setup(name='lofar-antenna-positions',
+    setup(name='lofarantpos',
           version      = __version__,
           description  = 'Access, query, and manipulate LOFAR antenna positions',
           long_description = long_description,
