@@ -11,6 +11,7 @@ if __name__ == "__main__":
           version      = __version__,
           description  = 'Access, query, and manipulate LOFAR antenna positions',
           long_description = long_description,
+          long_description_content_type="text/markdown",
           author       = 'M.A. Brentjens',
           author_email = 'brentjens@astron.nl',
           packages     = ['lofarantpos'],
