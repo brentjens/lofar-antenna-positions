@@ -42,3 +42,6 @@ Alternatively, install it from this source with
 ```
 python setup.py install
 ```
+
+**Note** This package used to be called `lofar-antenna-positions`. It may be
+necessary to uninstall `lofar-antenna-positions` before installing.
