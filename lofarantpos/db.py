@@ -6,9 +6,8 @@ an instance of a LofarAntennaDatabase:
 >>> import lofarantpos, numpy
 >>> db = lofarantpos.db.LofarAntennaDatabase()
 >>> db.phase_centres['CS001LBA']
-array([ 3826923.942,   460915.117,  5064643.229])
+array([3826923.942,  460915.117, 5064643.229])
 >>> numpy.set_printoptions(suppress=True)
->>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
 >>> db.antenna_pqr('RS210LBA')[:5]
 array([[ 0.        ,  0.        ,  0.        ],
        [-0.00006...,  2.55059...,  0.00185...],
@@ -201,14 +200,13 @@ class LofarAntennaDatabase(object):
         Example:
             >>> import lofarantpos.db
             >>> import numpy
-            >>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> db.hba_dipole_pqr("CS001HBA0")[:5]
-            array([[  1.93364...,  15.28453...,   0.00008...],
-                   [  3.07557...,  14.77611...,   0.00008...],
-                   [  4.21750...,  14.26769...,   0.00008...],
-                   [  5.35943...,  13.75927...,   0.00008...],
-                   [  1.42522...,  14.14260...,   0.00008...]], dtype=float32)
+                array([[ 1.9336444 , 15.284536  ,  0.00008769],
+                       [ 3.075576  , 14.776116  ,  0.00008769],
+                       [ 4.217508  , 14.267695  ,  0.00008769],
+                       [ 5.3594394 , 13.7592745 ,  0.00008769],
+                       [ 1.4252236 , 14.142605  ,  0.00008769]], dtype=float32)
         """
         base_tile = numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
                                  [[-1.5, 0.5], [-0.5, 0.5], [+0.5, 0.5], [+1.5, +0.5]],
@@ -240,14 +238,13 @@ class LofarAntennaDatabase(object):
         Example:
             >>> import lofarantpos.db
             >>> import numpy
-            >>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> db.hba_dipole_etrs("IE613HBA")[:5]
-            array([[ 3801679.57332...,  -528959.80788...,  5076969.80405...],
-                   [ 3801680.56727...,  -528959.55814...,  5076969.08837...],
-                   [ 3801681.56122...,  -528959.3083985 ,  5076968.37269...],
-                   [ 3801682.55516...,  -528959.05865...,  5076967.65701...],
-                   [ 3801679.71139...,  -528961.02799...,  5076969.57003...]])
+            array([[3801679.57332033, -528959.80788382, 5076969.80405122],
+                   [3801680.56726901, -528959.55814198, 5076969.08837304],
+                   [3801681.56121763, -528959.30839824, 5076968.37269509],
+                   [3801682.55516625, -528959.0586545 , 5076967.65701715],
+                   [3801679.7113895 , -528961.02799576, 5076969.57003303]])
         """
         return geo.transform(
             self.hba_dipole_pqr(field_name),
