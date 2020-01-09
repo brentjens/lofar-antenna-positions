@@ -13,7 +13,7 @@ with open(stationinfo_filename) as stationinfo_file:
         if line.startswith("# name "):
             column_names = line.split()[1:]
 
-df = pd.read_csv("/Users/dijkema/opt/LOFAR/MAC/Deployment/data/StaticMetaData/StationInfo.dat", delim_whitespace=True, comment='#', names=column_names)
+df = pd.read_csv(stationinfo_filename, delim_whitespace=True, comment='#', names=column_names)
 
 # drop lines with no numbers
 df = df.dropna()
@@ -29,9 +29,14 @@ df["ETRS-X"] = df["long"]
 df["ETRS-Y"] = df["long"]
 df["ETRS-Z"] = df["long"]
 
+# Assume the cabinet locations are in ETRS (not verified)
 df[["ETRS-X", "ETRS-Y", "ETRS-Z"]] = geo.xyz_from_geographic(
         np.deg2rad(df["long"]),
         np.deg2rad(df["lat"]),
         df["height"]).T
+
+# Limit digits in ETRS positions, convert to string
+for col in "ETRS-X", "ETRS-Y", "ETRS-Z":
+    df[col] = df[col].map(lambda x: "{0:.3f}".format(x))
 
 df.to_csv("stationinfo.csv", index=False)
