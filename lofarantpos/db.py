@@ -14,6 +14,8 @@ array([[ 0.        ,  0.        ,  0.        ],
        [ 2.24997...,  1.3499502 ,  0.00130...],
        [ 2.24982..., -1.35031..., -0.0004149 ],
        [ 0.00006..., -2.55059..., -0.00185...]])
+>>> db.container_locations['CS002']
+array([3826609.601,  460990.582, 5064879.514])
 """
 import csv
 import os
@@ -91,6 +93,17 @@ class PhaseCentre(object):
         return repr(self.__dict__)
 
 
+class ContainerLocation(object):
+    def __init__(self, csv_row):
+        self.station = csv_row[0]
+        self.etrs = numpy.array([float(csv_row[14]),
+                                 float(csv_row[15]),
+                                 float(csv_row[16])])
+
+    def __repr__(self):
+        return repr(self.__dict__)
+
+
 class RotationMatrix(object):
     def __init__(self, csv_row):
         self.station = csv_row[0]
@@ -132,6 +145,10 @@ class LofarAntennaDatabase(object):
             c.station + c.field: c.etrs
             for c in parse_csv(os.path.join(share, 'etrs-phase-centres.csv'),
                                PhaseCentre)}
+        self.container_locations = {
+            c.station: c.etrs
+            for c in parse_csv(os.path.join(share, 'stationinfo.csv'), ContainerLocation)
+        }
         self.antennas = parse_csv(os.path.join(share, 'etrs-antenna-positions.csv'),
                                   Antenna)
         pqr_to_etrs_rows = parse_csv(os.path.join(share, 'rotation_matrices.dat'),
