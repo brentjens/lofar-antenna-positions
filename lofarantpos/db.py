@@ -145,7 +145,7 @@ class LofarAntennaDatabase(object):
             c.station + c.field: c.etrs
             for c in parse_csv(os.path.join(share, 'etrs-phase-centres.csv'),
                                PhaseCentre)}
-        self.container_locations = {
+        self.cabinet_etrs = {
             c.station: c.etrs
             for c in parse_csv(os.path.join(share, 'stationinfo.csv'), ContainerLocation)
         }
