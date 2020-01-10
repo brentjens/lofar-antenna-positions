@@ -14,7 +14,7 @@ array([[ 0.        ,  0.        ,  0.        ],
        [ 2.24997...,  1.3499502 ,  0.00130...],
        [ 2.24982..., -1.35031..., -0.0004149 ],
        [ 0.00006..., -2.55059..., -0.00185...]])
->>> db.container_locations['CS002']
+>>> db.cabinet_etrs['CS002']
 array([3826609.602,  460990.583, 5064879.514])
 """
 import csv
@@ -145,7 +145,7 @@ class LofarAntennaDatabase(object):
             c.station + c.field: c.etrs
             for c in parse_csv(os.path.join(share, 'etrs-phase-centres.csv'),
                                PhaseCentre)}
-        self.container_locations = {
+        self.cabinet_etrs = {
             c.station: c.etrs
             for c in parse_csv(os.path.join(share, 'stationinfo.csv'), ContainerLocation)
         }

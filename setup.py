@@ -29,6 +29,7 @@ if __name__ == "__main__":
                             'share/lofarantpos/etrs-phase-centres.csv',
                             'share/lofarantpos/hba-rotations.csv',
                             'share/lofarantpos/normal_vectors.dat',
-                            'share/lofarantpos/rotation_matrices.dat'])]
+                            'share/lofarantpos/rotation_matrices.dat',
+                            'share/lofarantpos/stationinfo.csv'])]
          )
 
