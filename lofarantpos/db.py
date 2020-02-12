@@ -268,3 +268,46 @@ class LofarAntennaDatabase(object):
             numpy.zeros(3),
             self.pqr_to_etrs[field_name]) + \
                self.phase_centres[field_name][numpy.newaxis, :]
+
+    def pqr_to_localnorth(self, field_name):
+        """
+        Compute a rotation matrix from local coordinates (pointing North) to PQR
+
+        Args:
+            field_name (str): Field name (e.g. 'IE613LBA')
+
+        Example:
+            >>> import lofarantpos.db
+            >>> db = lofarantpos.db.LofarAntennaDatabase()
+            >>> db.pqr_to_localnorth("IE613LBA")
+            array([[ 0.97847792, -0.20633485, -0.00262657],
+                   [ 0.20632893,  0.97847984, -0.00235785],
+                   [ 0.00305655,  0.00176516,  0.99999377]])
+        """
+        localnorth_to_etrs = geo.localnorth_to_etrs(self.phase_centres[field_name])
+        return localnorth_to_etrs.T.dot(self.pqr_to_etrs[field_name])
+
+    def rotation_from_north(self, field_name):
+        """
+        Compute the angle (in radians) between the positive Q-axis of the local
+        coordinate system and the local north. Positive means Q is East of North.
+
+        Args:
+            field_name (str): Field name (e.g. 'IE613LBA')
+
+        Returns:
+            float: angle (in radians)
+
+        Example:
+            >>> import lofarantpos.db
+            >>> import numpy
+            >>> db = lofarantpos.db.LofarAntennaDatabase()
+            >>> numpy.rad2deg(db.rotation_from_north("IE613LBA"))
+            -11.907669845094134
+        """
+        localnorth_to_pqr = self.pqr_to_localnorth(field_name).T
+
+        # Coordinates of the Q axis in localnorth coordinates
+        pqr_localnorth = localnorth_to_pqr.T.dot(numpy.array([0,1,0]))
+
+        return numpy.arctan2(pqr_localnorth[0], pqr_localnorth[1])

@@ -38,6 +38,29 @@ def geographic_from_xyz(xyz_m):
     return {'lon_rad': lon_rad, 'lat_rad': lat_rad, 'height_m': height_m}
 
 
+def localnorth_to_etrs(centerxyz_m):
+    """
+    Compute a matrix that transforms from a local coordinate system tangent
+    to the WGS84 ellipsoid to ETRS89 ECEF XYZ coordinates.
+
+    Args:
+        centerxyz_m (array): xyz-coordinates of the center of the local coordinate system
+
+    Returns:
+        array: 3x3 rotation matrix
+
+    Example:
+        >>> import numpy
+        >>> localnorth_to_etrs(numpy.array([3801633.868, -529022.268, 5076996.892]))
+        array([[ 0.13782846, -0.79200355,  0.59475516],
+               [ 0.99045611,  0.11021248, -0.08276408],
+               [ 0.        ,  0.60048613,  0.79963517]])
+    """
+    center_lonlat = geographic_from_xyz(centerxyz_m)
+    ellipsoid_normal = normal_vector_ellipsoid(center_lonlat['lon_rad'], center_lonlat['lat_rad'])
+    return projection_matrix(centerxyz_m, ellipsoid_normal)
+
+
 def xyz_from_geographic(lon_rad, lat_rad, height_m):
     """Compute cartesian xyz coordinates from a longitude, latitude and height (from
     the WGS84 ellipsoid)
