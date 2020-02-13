@@ -289,8 +289,9 @@ class LofarAntennaDatabase(object):
 
     def rotation_from_north(self, field_name):
         """
-        Compute the angle (in radians) between the positive Q-axis of the local
-        coordinate system and the local north. Positive means Q is East of North.
+        Compute the angle in radians between the positive Q-axis (projected onto
+        a local tangent to the WGS84 ellipsoid) and the local north.
+        Positive means Q is East of North.
 
         Args:
             field_name (str): Field name (e.g. 'IE613LBA')
