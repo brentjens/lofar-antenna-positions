@@ -6,15 +6,16 @@ an instance of a LofarAntennaDatabase:
 >>> import lofarantpos, numpy
 >>> db = lofarantpos.db.LofarAntennaDatabase()
 >>> db.phase_centres['CS001LBA']
-array([ 3826923.942,   460915.117,  5064643.229])
+array([3826923.942,  460915.117, 5064643.229])
 >>> numpy.set_printoptions(suppress=True)
->>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
 >>> db.antenna_pqr('RS210LBA')[:5]
 array([[ 0.        ,  0.        ,  0.        ],
        [-0.00006...,  2.55059...,  0.00185...],
        [ 2.24997...,  1.3499502 ,  0.00130...],
        [ 2.24982..., -1.35031..., -0.0004149 ],
        [ 0.00006..., -2.55059..., -0.00185...]])
+>>> db.cabinet_etrs['CS002']
+array([3826609.602,  460990.583, 5064879.514])
 """
 import csv
 import os
@@ -92,6 +93,17 @@ class PhaseCentre(object):
         return repr(self.__dict__)
 
 
+class ContainerLocation(object):
+    def __init__(self, csv_row):
+        self.station = csv_row[0]
+        self.etrs = numpy.array([float(csv_row[14]),
+                                 float(csv_row[15]),
+                                 float(csv_row[16])])
+
+    def __repr__(self):
+        return repr(self.__dict__)
+
+
 class RotationMatrix(object):
     def __init__(self, csv_row):
         self.station = csv_row[0]
@@ -133,6 +145,10 @@ class LofarAntennaDatabase(object):
             c.station + c.field: c.etrs
             for c in parse_csv(os.path.join(share, 'etrs-phase-centres.csv'),
                                PhaseCentre)}
+        self.cabinet_etrs = {
+            c.station: c.etrs
+            for c in parse_csv(os.path.join(share, 'stationinfo.csv'), ContainerLocation)
+        }
         self.antennas = parse_csv(os.path.join(share, 'etrs-antenna-positions.csv'),
                                   Antenna)
         pqr_to_etrs_rows = parse_csv(os.path.join(share, 'rotation_matrices.dat'),
@@ -201,14 +217,13 @@ class LofarAntennaDatabase(object):
         Example:
             >>> import lofarantpos.db
             >>> import numpy
-            >>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> db.hba_dipole_pqr("CS001HBA0")[:5]
-            array([[  1.93364...,  15.28453...,   0.00008...],
-                   [  3.07557...,  14.77611...,   0.00008...],
-                   [  4.21750...,  14.26769...,   0.00008...],
-                   [  5.35943...,  13.75927...,   0.00008...],
-                   [  1.42522...,  14.14260...,   0.00008...]], dtype=float32)
+            array([[ 1.9336444 , 15.284...  ,  0.00008769],
+                   [ 3.075576  , 14.776116  ,  0.00008769],
+                   [ 4.217508  , 14.267695  ,  0.00008769],
+                   [ 5.3594... , 13.7592745 ,  0.00008769],
+                   [ 1.4252236 , 14.142605  ,  0.00008769]], dtype=float32)
         """
         base_tile = numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
                                  [[-1.5, 0.5], [-0.5, 0.5], [+0.5, 0.5], [+1.5, +0.5]],
@@ -240,17 +255,60 @@ class LofarAntennaDatabase(object):
         Example:
             >>> import lofarantpos.db
             >>> import numpy
-            >>> if float(".".join(numpy.__version__.split('.')[:2]))>=1.14: numpy.set_printoptions(legacy=True)
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> db.hba_dipole_etrs("IE613HBA")[:5]
-            array([[ 3801679.57332...,  -528959.80788...,  5076969.80405...],
-                   [ 3801680.56727...,  -528959.55814...,  5076969.08837...],
-                   [ 3801681.56122...,  -528959.3083985 ,  5076968.37269...],
-                   [ 3801682.55516...,  -528959.05865...,  5076967.65701...],
-                   [ 3801679.71139...,  -528961.02799...,  5076969.57003...]])
+            array([[3801679.57332033, -528959.80788382, 5076969.80405122],
+                   [3801680.56726901, -528959.55814198, 5076969.08837304],
+                   [3801681.56121763, -528959.30839824, 5076968.37269509],
+                   [3801682.55516625, -528959.0586545 , 5076967.65701715],
+                   [3801679.7113895 , -528961.02799576, 5076969.57003303]])
         """
         return geo.transform(
             self.hba_dipole_pqr(field_name),
             numpy.zeros(3),
             self.pqr_to_etrs[field_name]) + \
                self.phase_centres[field_name][numpy.newaxis, :]
+
+    def pqr_to_localnorth(self, field_name):
+        """
+        Compute a rotation matrix from local coordinates (pointing North) to PQR
+
+        Args:
+            field_name (str): Field name (e.g. 'IE613LBA')
+
+        Example:
+            >>> import lofarantpos.db
+            >>> db = lofarantpos.db.LofarAntennaDatabase()
+            >>> db.pqr_to_localnorth("IE613LBA")
+            array([[ 0.97847792, -0.20633485, -0.00262657],
+                   [ 0.20632893,  0.97847984, -0.00235785],
+                   [ 0.00305655,  0.00176516,  0.99999377]])
+        """
+        localnorth_to_etrs = geo.localnorth_to_etrs(self.phase_centres[field_name])
+        return localnorth_to_etrs.T.dot(self.pqr_to_etrs[field_name])
+
+    def rotation_from_north(self, field_name):
+        """
+        Compute the angle in radians between the positive Q-axis (projected onto
+        a local tangent to the WGS84 ellipsoid) and the local north.
+        Positive means Q is East of North.
+
+        Args:
+            field_name (str): Field name (e.g. 'IE613LBA')
+
+        Returns:
+            float: angle (in radians)
+
+        Example:
+            >>> import lofarantpos.db
+            >>> import numpy
+            >>> db = lofarantpos.db.LofarAntennaDatabase()
+            >>> numpy.rad2deg(db.rotation_from_north("IE613LBA"))
+            -11.907669845094134
+        """
+        localnorth_to_pqr = self.pqr_to_localnorth(field_name).T
+
+        # Coordinates of the Q axis in localnorth coordinates
+        pqr_localnorth = localnorth_to_pqr.T.dot(numpy.array([0,1,0]))
+
+        return numpy.arctan2(pqr_localnorth[0], pqr_localnorth[1])
