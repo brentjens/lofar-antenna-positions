@@ -1,6 +1,6 @@
 """Functions for geographic transformations commonly used for LOFAR"""
 
-from numpy import sqrt, sin, cos, arctan2, array, cross, dot, float64
+from numpy import sqrt, sin, cos, arctan2, array, cross, dot, float64, vstack, transpose, shape
 from numpy.linalg.linalg import norm
 
 
@@ -11,30 +11,35 @@ def normalized_earth_radius(latitude_rad):
 
 
 def geographic_from_xyz(xyz_m):
-    """Compute longitude, latitude and height (from the WGS84 ellipsoid) of a given point
+    """Compute longitude, latitude and height (from the WGS84 ellipsoid) of a given point or list
+       of points
 
     Args:
         xyz_m (Union[array, list]): xyz-coordinates (in m) of the given point.
 
     Returns:
-        dict: Dictionary with 'lon_rad', 'lat_rad', 'height_m'
-    """
-    wgs84_a = 6378137.0
-    wgs84_f = 1. / 298.257223563
-    wgs84_e2 = wgs84_f * (2.0 - wgs84_f)
+        Dict[Union[np.array, float]: Dictionary with 'lon_rad', 'lat_rad', 'height_m',
+                                     values are float for a single input, arrays for multiple inputs
 
-    x_m, y_m, z_m = xyz_m
-    lon_rad = arctan2(y_m, x_m)
-    r_m = sqrt(x_m ** 2 + y_m ** 2)
-    # Iterate to latitude solution
-    phi_previous = 1e4
-    phi = arctan2(z_m, r_m)
-    while abs(phi - phi_previous) > 1.6e-12:
-        phi_previous = phi
-        phi = arctan2(z_m + wgs84_e2 * wgs84_a * normalized_earth_radius(phi) * sin(phi),
-                      r_m)
-    lat_rad = phi
-    height_m = r_m * cos(lat_rad) + z_m * sin(lat_rad) - wgs84_a * sqrt(1.0 - wgs84_e2 * sin(lat_rad) ** 2)
+    Example:
+        >>> from pprint import pprint
+        >>> xyz_m = [3836811, 430299, 5059823]
+        >>> pprint(geographic_from_xyz(xyz_m))
+        {'height_m': -0.28265954554080963,
+        ...'lat_rad': 0.9222359279580563,
+        ...'lon_rad': 0.11168348969295486}
+        >>> xyz2_m = array([3828615, 438754, 5065265])
+        >>> pprint(geographic_from_xyz([xyz_m, xyz2_m]))
+        {'height_m': array([-0.28265955, -0.74483879]),
+        ...'lat_rad': array([0.92223593, 0.92365033]),
+        ...'lon_rad': array([0.11168349, 0.11410087])}
+    """
+    lon_rad, lat_rad, height_m = geographic_array_from_xyz(xyz_m).T
+    # For backward compatibility, return floats (rather than shape 1 arrays) for single input
+    if shape(xyz_m) == (3,):
+        lon_rad = lon_rad[0]
+        lat_rad = lat_rad[0]
+        height_m = height_m[0]
     return {'lon_rad': lon_rad, 'lat_rad': lat_rad, 'height_m': height_m}
 
 
@@ -42,13 +47,13 @@ def geographic_array_from_xyz(xyz_m):
     r'''
     xyz_m is a (N,3) array.
     Compute lon, lat, and height
-    Output an (N, 3) array
+    Output an (N, 3) array with latitude (rad), longitude (rad) and height (m)
     '''
     wgs84_a = 6378137.0
     wgs84_f = 1./298.257223563
     wgs84_e2 = wgs84_f*(2.0 - wgs84_f)
     
-    x_m, y_m, z_m = xyz_m.T
+    x_m, y_m, z_m = transpose(xyz_m)
     lon_rad = arctan2(y_m, x_m)
     r_m = sqrt(x_m**2 + y_m**2)
     # Iterate to latitude solution
