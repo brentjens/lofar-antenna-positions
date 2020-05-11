@@ -1,4 +1,4 @@
-from numpy import sqrt, sin, cos, arctan2, array, cross, dot, float64
+from numpy import sqrt, sin, cos, arctan2, array, cross, dot, float64, vstack
 from numpy.linalg.linalg import norm
 
 def normalized_earth_radius(latitude_rad):
@@ -26,6 +26,31 @@ def geographic_from_xyz(xyz_m):
     lat_rad = phi
     height_m = r_m*cos(lat_rad) + z_m*sin(lat_rad) - wgs84_a*sqrt(1.0 - wgs84_e2*sin(lat_rad)**2)
     return {'lon_rad': lon_rad, 'lat_rad': lat_rad, 'height_m': height_m}
+
+
+def geographic_array_from_xyz(xyz_m):
+    r'''
+    xyz_m is a (N,3) array.
+    Compute lon, lat, and height
+    Output an (N, 3) array
+    '''
+    wgs84_a = 6378137.0
+    wgs84_f = 1./298.257223563
+    wgs84_e2 = wgs84_f*(2.0 - wgs84_f)
+    
+    x_m, y_m, z_m = xyz_m.T
+    lon_rad = arctan2(y_m, x_m)
+    r_m = sqrt(x_m**2 + y_m**2)
+    # Iterate to latitude solution
+    phi_previous = 1e4
+    phi = arctan2(z_m, r_m)
+    while (abs(phi -phi_previous) > 1.6e-12).any():
+        phi_previous = phi
+        phi = arctan2(z_m + wgs84_e2*wgs84_a*normalized_earth_radius(phi)*sin(phi),
+                      r_m)
+    lat_rad = phi
+    height_m = r_m*cos(lat_rad) + z_m*sin(lat_rad) - wgs84_a*sqrt(1.0 - wgs84_e2*sin(lat_rad)**2)
+    return vstack((lon_rad, lat_rad, height_m)).T
 
 
 
