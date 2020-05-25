@@ -232,16 +232,30 @@ class LofarAntennaDatabase(object):
                                 dtype=numpy.float32)
         base_tile *= 1.25
         base_tile_delta_pqr = base_tile.reshape((-1, 2))
-        rotation = self.hba_rotations[field_name]
-        matrix = numpy.array([[numpy.cos(rotation), numpy.sin(rotation)],
-                              [-numpy.sin(rotation), numpy.cos(rotation)]],
-                             dtype=numpy.float32)
-        rotated_tile_pqr = numpy.dot(matrix, base_tile_delta_pqr.T).T
-        antenna_pqr = self.antenna_pqr(field_name)
-        return numpy.array([[element[0] + ant[0], element[1] + ant[1], ant[2]]
-                            for ant in antenna_pqr
-                            for element in rotated_tile_pqr],
-                           dtype=numpy.float32).reshape((-1, 3))
+
+        tile_pqr = self.antenna_pqr(field_name)
+
+        if field_name[:2] == "CS" and field_name[-3:] == "HBA":
+            # Merge positions for HBA0 and HBA1
+            subfields = [field_name + "0", field_name + "1"]
+        else:
+            subfields = [field_name]
+
+        dipole_pqr = numpy.zeros((0, 3), dtype=numpy.float32)
+        for subfield, subfield_tile_pqr in zip(subfields, numpy.split(tile_pqr, len(subfields))):
+            rotation = self.hba_rotations[subfield]
+            matrix = numpy.array([[numpy.cos(rotation), numpy.sin(rotation)],
+                                  [-numpy.sin(rotation), numpy.cos(rotation)]],
+                                 dtype=numpy.float32)
+            rotated_tile_pqr = numpy.dot(matrix, base_tile_delta_pqr.T).T
+
+            subfield_dipole_pqr = numpy.array([[element[0] + tile[0], element[1] + tile[1], tile[2]]
+                                               for tile in subfield_tile_pqr
+                                               for element in rotated_tile_pqr],
+                                              dtype=numpy.float32).reshape((-1, 3))
+            dipole_pqr = numpy.concatenate((dipole_pqr, subfield_dipole_pqr))
+
+        return dipole_pqr
 
     def hba_dipole_etrs(self, field_name):
         """Return a list of all ETRS dipole coordinates for a given HBA antenna field
