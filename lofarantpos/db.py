@@ -271,11 +271,11 @@ class LofarAntennaDatabase(object):
             >>> import numpy
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> db.hba_dipole_etrs("IE613HBA")[:5]
-            array([[3801679.57332044, -528959.80788431, 5076969.80405109],
-                   [3801680.56726906, -528959.55814057, 5076969.08837315],
-                   [3801681.56121773, -528959.30839872, 5076968.37269497],
-                   [3801682.55516635, -528959.05865498, 5076967.65701702],
-                   [3801679.7113896 , -528961.02799624, 5076969.5700329 ]])
+            array([[3801679.57332033, -528959.80788382, 5076969.80405122],
+                   [3801680.56726901, -528959.55814198, 5076969.08837304],
+                   [3801681.56121763, -528959.30839824, 5076968.37269509],
+                   [3801682.55516625, -528959.0586545 , 5076967.65701715],
+                   [3801679.7113895 , -528961.02799576, 5076969.57003303]])
         """
         return geo.transform(
             self.hba_dipole_pqr(field_name),
@@ -318,7 +318,7 @@ class LofarAntennaDatabase(object):
             >>> import numpy
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> numpy.rad2deg(db.rotation_from_north("IE613LBA"))
-            -11.907669844469687
+            -11.907669843448476
         """
         localnorth_to_pqr = self.pqr_to_localnorth(field_name).T
 
