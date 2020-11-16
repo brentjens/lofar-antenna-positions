@@ -39,4 +39,4 @@ df[["ETRS-X", "ETRS-Y", "ETRS-Z"]] = geo.xyz_from_geographic(
 for col in "ETRS-X", "ETRS-Y", "ETRS-Z":
     df[col] = df[col].map(lambda x: "{0:.3f}".format(x))
 
-df.to_csv("stationinfo.csv", index=False)
+df.to_csv("../share/lofarantpos/stationinfo-tmp.csv", index=False)
