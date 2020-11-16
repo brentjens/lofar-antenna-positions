@@ -295,7 +295,7 @@ class LofarAntennaDatabase(object):
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> db.pqr_to_localnorth("IE613LBA")
             array([[ 0.97847792, -0.20633485, -0.00262657],
-                   [ 0.20632893,  0.97847984, -0.00235785],
+                   [ 0.20632893,  0.97847984, -0.00235784],
                    [ 0.00305655,  0.00176516,  0.99999377]])
         """
         localnorth_to_etrs = geo.localnorth_to_etrs(self.phase_centres[field_name])
@@ -318,7 +318,7 @@ class LofarAntennaDatabase(object):
             >>> import numpy
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> numpy.rad2deg(db.rotation_from_north("IE613LBA"))
-            -11.907669845094134
+            -11.907669843448476
         """
         localnorth_to_pqr = self.pqr_to_localnorth(field_name).T
 
