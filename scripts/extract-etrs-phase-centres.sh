@@ -13,6 +13,7 @@ for fn in `ls *antenna-posi*.csv`; do
 done	| tr -d ' ' \
 		| sort -k 1.3,1.9 \
 		| grep -v FI \
-		| sed -e's/^\(.*,.*,.*,.*\),.*,.*,.*,.*,.*/\1/' >> ../share/lofarantpos/etrs-phase-centres-tmp.csv
+		| sed -e's/^\(.*,.*,.*,.*\),.*,.*,.*,.*,.*/\1/' \
+		| awk '{split($0,a,","); printf("%s,%s,%.3f,%.3f,%.3f\n", a[1], a[2], a[3], a[4], a[5])}' >> ../share/lofarantpos/etrs-phase-centres-tmp.csv
 
 popd
