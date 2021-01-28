@@ -4,7 +4,7 @@ Module for manipulating LOFAR antenna databases. Typical usage is to create
 an instance of a LofarAntennaDatabase:
 
 ```python
->>> import lofarantpos
+>>> import lofarantpos.db
 
 >>> db = lofarantpos.db.LofarAntennaDatabase()
 
