@@ -230,6 +230,11 @@ class LofarAntennaDatabase(object):
                                  [[-1.5, -0.5], [-0.5, -0.5], [+0.5, -0.5], [+1.5, -0.5]],
                                  [[-1.5, -1.5], [-0.5, -1.5], [+0.5, -1.5], [+1.5, -1.5]]],
                                 dtype=numpy.float32)
+       
+        if field_name[:5] == "DE601":
+            # DE601 has different HBAT element offsets
+            base_tile = base_tile.dot([[0, 1.0, 0], [-1.0, 0, 0], [0, 0, 1.0]])
+       
         base_tile *= 1.25
         base_tile_delta_pqr = base_tile.reshape((-1, 2))
 
