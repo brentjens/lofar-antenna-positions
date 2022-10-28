@@ -17,6 +17,7 @@ if __name__ == "__main__":
           packages     = ['lofarantpos'],
           url          = "https://github.com/lofar-astron/lofar-antenna-positions",
           requires     = ['numpy', 'pathlib'],
+          tests_require = ['numpy', 'pathlib', 'matplotlib', 'tilemapbase'],
           scripts      = [],
           classifiers  = [
               "Programming Language :: Python :: 3",
@@ -32,4 +33,3 @@ if __name__ == "__main__":
                             'share/lofarantpos/rotation_matrices.dat',
                             'share/lofarantpos/stationinfo.csv'])]
          )
-
