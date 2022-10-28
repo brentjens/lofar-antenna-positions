@@ -1,5 +1,3 @@
-import lofarantpos.geo
-
 from .db import LofarAntennaDatabase
 from .geo import (
     localnorth_to_etrs,
@@ -13,6 +11,9 @@ db = LofarAntennaDatabase()
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle
+
+import tilemapbase
+import tilemapbase.mapping
 
 
 def plot_hba(station_name, ax=None, centre=None, subfield="", labels=False, tiles=True):
@@ -218,10 +219,6 @@ def plot_superterp(
 
     if osm_background:
         add_osm_background(ax, centre)
-
-
-import tilemapbase
-import tilemapbase.mapping
 
 
 def _full_extent_to_xy(plotter, centre):

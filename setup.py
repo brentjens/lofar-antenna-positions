@@ -32,4 +32,3 @@ if __name__ == "__main__":
                             'share/lofarantpos/rotation_matrices.dat',
                             'share/lofarantpos/stationinfo.csv'])]
          )
-
