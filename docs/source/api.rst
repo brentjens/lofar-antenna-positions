@@ -1,37 +1,26 @@
 lofarantpos package
 ===================
 
-Submodules
-----------
-
-lofarantpos.db module
----------------------
+lofarantpos.db
+--------------
 
 .. automodule:: lofarantpos.db
    :members:
    :undoc-members:
    :show-inheritance:
 
-lofarantpos.geo module
-----------------------
+lofarantpos.geo
+---------------
 
 .. automodule:: lofarantpos.geo
    :members:
    :undoc-members:
    :show-inheritance:
 
-lofarantpos.plotutil module
----------------------------
+lofarantpos.plotutil
+--------------------
 
 .. automodule:: lofarantpos.plotutil
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: lofarantpos
    :members:
    :undoc-members:
    :show-inheritance:
