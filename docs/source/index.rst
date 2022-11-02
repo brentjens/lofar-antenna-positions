@@ -15,7 +15,7 @@ Installation is typically done with pip:
 
 Usage
 -----
-.. automodule:: lofarantpos.db
+.. automodule:: db
 
 Contents
 --------
