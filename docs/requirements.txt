@@ -1,4 +1,5 @@
 numpy
 pathlib
 ipykernel
+matplotlib
 nbsphinx
