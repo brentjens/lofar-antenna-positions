@@ -1,2 +1,4 @@
+numpy
+pathlib
 ipykernel
 nbsphinx
