@@ -26,13 +26,13 @@ def geographic_from_xyz(xyz_m):
         >>> xyz_m = [3836811, 430299, 5059823]
         >>> pprint(geographic_from_xyz(xyz_m))
         {'height_m': -0.28265954554080963,
-        ...'lat_rad': 0.9222359279580563,
-        ...'lon_rad': 0.11168348969295486}
+         'lat_rad': 0.9222359279580563,
+         'lon_rad': 0.11168348969295486}
         >>> xyz2_m = array([3828615, 438754, 5065265])
         >>> pprint(geographic_from_xyz([xyz_m, xyz2_m]))
         {'height_m': array([-0.28265955, -0.74483879]),
-        ...'lat_rad': array([0.92223593, 0.92365033]),
-        ...'lon_rad': array([0.11168349, 0.11410087])}
+         'lat_rad': array([0.92223593, 0.92365033]),
+         'lon_rad': array([0.11168349, 0.11410087])}
     """
     lon_rad, lat_rad, height_m = geographic_array_from_xyz(xyz_m).T
     # For backward compatibility, return floats (rather than shape 1 arrays) for single input
@@ -81,10 +81,12 @@ def localnorth_to_etrs(centerxyz_m):
 
     Example:
         >>> import numpy
-        >>> localnorth_to_etrs(numpy.array([3801633.868, -529022.268, 5076996.892]))
-        array([[ 0.13782846, -0.79200355,  0.59475516],
-               [ 0.99045611,  0.11021248, -0.08276408],
-               [ 0.        ,  0.60048613,  0.79963517]])
+        >>> print(numpy.array_str(
+        ...     localnorth_to_etrs(numpy.array([3801633.868, -529022.268, 5076996.892]))
+        ...     , precision = 8, suppress_small = True))
+        [[ 0.13782846 -0.79200355  0.59475516]
+         [ 0.99045611  0.11021248 -0.08276408]
+         [ 0.          0.60048613  0.79963517]]
     """
     center_lonlat = geographic_from_xyz(centerxyz_m)
     ellipsoid_normal = normal_vector_ellipsoid(center_lonlat['lon_rad'], center_lonlat['lat_rad'])

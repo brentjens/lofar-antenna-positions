@@ -3,17 +3,17 @@
 Module for manipulating LOFAR antenna databases. Typical usage is to create
 an instance of a LofarAntennaDatabase:
 
->>> import lofarantpos, numpy
+>>> import lofarantpos.db, numpy
 >>> db = lofarantpos.db.LofarAntennaDatabase()
 >>> db.phase_centres['CS001LBA']
 array([3826923.942,  460915.117, 5064643.229])
 >>> numpy.set_printoptions(suppress=True)
 >>> db.antenna_pqr('RS210LBA')[:5]
 array([[ 0.        ,  0.        ,  0.        ],
-       [-0.00006...,  2.55059...,  0.00185...],
-       [ 2.24997...,  1.3499502 ,  0.00130...],
-       [ 2.24982..., -1.35031..., -0.0004149 ],
-       [ 0.00006..., -2.55059..., -0.00185...]])
+       [-0.00006318,  2.55059612,  0.00185307],
+       [ 2.24997639,  1.3499502 ,  0.00130843],
+       [ 2.24982406, -1.35031535, -0.0004149 ],
+       [ 0.00006318, -2.55059612, -0.00185307]])
 >>> db.cabinet_etrs['CS002']
 array([3826609.602,  460990.583, 5064879.514])
 """
@@ -219,10 +219,10 @@ class LofarAntennaDatabase(object):
             >>> import numpy
             >>> db = lofarantpos.db.LofarAntennaDatabase()
             >>> db.hba_dipole_pqr("CS001HBA0")[:5]
-            array([[ 1.9336444 , 15.284...  ,  0.00008769],
+            array([[ 1.9336444 , 15.284537  ,  0.00008769],
                    [ 3.075576  , 14.776116  ,  0.00008769],
                    [ 4.217508  , 14.267695  ,  0.00008769],
-                   [ 5.3594... , 13.7592745 ,  0.00008769],
+                   [ 5.35944   , 13.7592745 ,  0.00008769],
                    [ 1.4252236 , 14.142605  ,  0.00008769]], dtype=float32)
         """
         base_tile = numpy.array([[[-1.5, 1.5], [-0.5, 1.5], [+0.5, 1.5], [+1.5, +1.5]],
